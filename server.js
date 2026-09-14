@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { PORT, FRONTEND_URL } from "./config/env.js";
 import { connectDB } from "./config/db.js";
+import errorsMiddleware from "./middlewares/errors.middleware.js";
 
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
@@ -16,7 +17,7 @@ app.use(
     credentials: true,
   }),
 );
-
+app.use(errorsMiddleware);
 await connectDB();
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
