@@ -8,7 +8,7 @@ export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     const member = await Member.findOne({ email });
-    console.log(email)
+    console.log(email);
     if (!member) {
       return res.status(401).json({
         success: false,
@@ -56,6 +56,51 @@ export const login = async (req, res, next) => {
       },
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentUser = async (req, res, next) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: "UNAUTHORIZED",
+      });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const member = await Member.findById(decoded.id).select("-password");
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        error: "DATA_NOT_FOUND",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      authenticated: true,
+      member,
+    });
+  } catch (error) {
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      return res.status(401).json({
+        success: false,
+        error:
+          error.name === "TokenExpiredError"
+            ? "TOKEN_EXPIRED"
+            : "INVALID_TOKEN",
+      });
+    }
+
     next(error);
   }
 };
