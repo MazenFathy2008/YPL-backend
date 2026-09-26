@@ -2,13 +2,23 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import Member from "../models/member.model.js";
-import { JWT_SECRET } from "../config/env.js";
+import { JWT_SECRET, NODE_ENV } from "../config/env.js";
+const isProduction = NODE_ENV === "production";
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const member = await Member.findOne({ email });
+
     console.log(email);
+
     if (!member) {
       return res.status(401).json({
         success: false,
@@ -36,14 +46,9 @@ export const login = async (req, res, next) => {
       },
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, cookieOptions);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       authenticated: true,
       member: {
@@ -82,7 +87,7 @@ export const getCurrentUser = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       authenticated: true,
       member,
@@ -109,11 +114,11 @@ export const logout = async (req, res, next) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Logged out successfully",
     });
