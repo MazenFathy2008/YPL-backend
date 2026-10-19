@@ -26,12 +26,12 @@ const applicationSchema = new mongoose.Schema(
       required: true,
     },
 
-    question: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
+    // question: {
+    //   type: String,
+    //   required: true,
+    //   trim: true,
+    // },
+    
     status: {
       type: String,
       enum: ["pending", "accepted", "rejected"],

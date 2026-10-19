@@ -9,7 +9,7 @@ export const createApplication = async (req, res, next) => {
       email,
       phone,
       password: hashedPassword,
-      question,
+      // question,
     });
     res.status(201).json({
       success: true,
